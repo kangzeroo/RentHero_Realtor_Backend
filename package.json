@@ -1,0 +1,41 @@
+{
+  "name": "Landlord_Auth_MS",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "NODE_ENV=development nodemon server.js",
+    "prod": "NODE_ENV=production nodemon server.js",
+    "staging": "NODE_ENV=staging nodemon server.js"
+  },
+  "engines": {
+    "node": "6.9.0"
+  },
+  "author": " ByteNectar Inc",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "2.68.0",
+    "axios": "0.18.0",
+    "bcryptjs": "2.4.3",
+    "body-parser": "1.17.2",
+    "cors": "2.8.3",
+    "dotenv": "4.0.0",
+    "express": "4.15.3",
+    "forever": "0.15.3",
+    "google-auth-library": "0.12.0",
+    "googleapis": "22.0.0",
+    "mongoose": "4.10.6",
+    "morgan": "1.8.2",
+    "nodemon": "1.11.0",
+    "pg": "7.1.2",
+    "querystring": "0.2.0",
+    "rxjs": "5.4.0",
+    "socket.io": "2.0.3",
+    "uuid": "3.0.1"
+  },
+  "devDependencies": {
+    "eslint": "4.0.0",
+    "eslint-plugin-node": "5.0.0",
+    "json-loader": "0.5.4"
+  }
+}
