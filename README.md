@@ -1,5 +1,5 @@
 
-# Landlord Auth Microservice [PORT:8101]
+# Landlord Auth Microservice [PORT:7101]
 This microservice handles authentication of landlords on RentHero v4. Specifically for the frontend client `RentHero_Landlord_Controls`.
 
 ## Main functions
