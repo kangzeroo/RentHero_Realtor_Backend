@@ -66,7 +66,12 @@ const get_staff_profile = (staff_id) => {
   const p = new Promise((res, rej) => {
     const values = [staff_id]
 
-    const queryString = `SELECT staff_id, first_name, last_name, email, phone FROM staff WHERE staff_id = $1`
+    const queryString = `SELECT a.staff_id, a.first_name, a.last_name, a.email, a.phone,
+                                b.corporation_id
+                           FROM staff a
+                           LEFT OUTER JOIN corporation_staff b
+                             ON a.staff_id = b.staff_id
+                          WHERE a.staff_id = $1`
 
     query(queryString, values, (err, results) => {
       if (err) {
