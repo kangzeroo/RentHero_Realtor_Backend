@@ -30,6 +30,7 @@ module.exports = function(app){
 
 	// corp
 	app.post('/get_corporation_profile', [json_encoding, originCheck, Google_JWT_Check], CorpRoutes.get_corporation_profile)
+	app.post('/create_corporation', [json_encoding, originCheck, Google_JWT_Check], CorpRoutes.create_corporation)
 
 	// email
 	// app.post('/get_recent_emails', [json_encoding, originCheck], EmailRoutes.get_recent_emails)
