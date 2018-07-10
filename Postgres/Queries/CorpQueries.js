@@ -71,3 +71,24 @@ exports.create_corporation_for_staff = (corporation_id, corporation_name, staff_
   })
   return p
 }
+
+exports.update_corporation_profile = (corporation_id, corporation_name) => {
+  const p = new Promise((res, rej) => {
+    const values = [corporation_id, corporation_name]
+    const updateCorp = `UPDATE corporation
+                           SET corporation_name = $2
+                           WHERE corporation_id = $1
+                       `
+
+    query(updateCorp, values, (err, results) => {
+      if (err) {
+        console.log(err)
+        rej('Failed to update profile')
+      }
+      res({
+        message: 'Successfully updated profile'
+      })
+    })
+  })
+  return p
+}

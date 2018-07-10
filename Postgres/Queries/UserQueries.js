@@ -183,3 +183,29 @@ exports.save_refresh_token_to_database = (access_token, refresh_token, identityI
   })
   return p
 }
+
+
+exports.update_staff_profile = (staff_id, first_name, last_name, email, phone) => {
+  const p = new Promise((res, rej) => {
+    const values = [staff_id, first_name, last_name, email, phone]
+    const updateUser = `UPDATE staff
+                           SET first_name = $2,
+                               last_name = $3,
+                               email = $4,
+                               phone = $5,
+                               updated_at = CURRENT_TIMESTAMP
+                         WHERE staff_id = $1
+                       `
+
+    query(updateUser, values, (err, results) => {
+      if (err) {
+        console.log(err)
+        rej('Failed to update profile')
+      }
+      res({
+        message: 'Successfully updated profile'
+      })
+    })
+  })
+  return p
+}
