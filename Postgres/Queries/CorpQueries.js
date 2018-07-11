@@ -13,9 +13,12 @@ const query = promisify(pool.query)
 exports.get_corporation_from_sql = (corporation_id) => {
   const p = new Promise((res, rej) => {
     const values = [corporation_id]
-    const queryString = `SELECT corporation_id, corporation_name
-                           FROM corporation
-                           WHERE corporation_id = $1
+    const queryString = `SELECT a.corporation_id, a.corporation_name, a.created_at, a.updated_at,
+                                b.proxy_email, b.proxy_phone
+                           FROM corporation a
+                           LEFT OUTER JOIN corporation_proxy b
+                           ON a.corporation_id = b.corporation_id
+                           WHERE a.corporation_id = $1
                         `
 
     query(queryString, values, (err, results) => {
@@ -87,6 +90,29 @@ exports.update_corporation_profile = (corporation_id, corporation_name) => {
       }
       res({
         message: 'Successfully updated profile'
+      })
+    })
+  })
+  return p
+}
+
+exports.add_proxy_email_to_corp = (corporation_id, proxy_email) => {
+  const p = new Promise((res, rej) => {
+    const values = [corporation_id, proxy_email]
+    const addProxy = `INSERT INTO corporation_proxy (corporation_id, proxy_email)
+                           VALUES ($1, $2)
+                           ON CONFLICT (corporation_id)
+                           DO UPDATE SET proxy_email = $2,
+                                         updated_at = CURRENT_TIMESTAMP
+                     `
+
+    query(addProxy, values, (err, results) => {
+      if (err) {
+        console.log(err)
+        rej('Failed to save email')
+      }
+      res({
+        message: 'Successfully saved email'
       })
     })
   })
