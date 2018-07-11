@@ -124,6 +124,7 @@ exports.add_proxy_email_to_corp = (corporation_id, proxy_email) => {
 exports.add_proxy_fallback = (proxy_id, email) => {
   const p = new Promise((res, rej) => {
     const values = [proxy_id, email, 'default']
+    console.log(values)
     const addProxy = `INSERT INTO proxy_fallback (proxy_id, email, type)
                             VALUES ($1, $2, $3)
                             ON CONFLICT (proxy_id)
