@@ -1,1 +1,1 @@
-docker build -t landlord_auth_ms .
+docker build -t realtor_backend .
