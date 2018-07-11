@@ -22,3 +22,30 @@ exports.update_staff_profile = (req, res, next) => {
       res.status(500).send(err)
     })
 }
+
+exports.insert_multi_ad_landlord_proxy_relationship = (req, res, next) => {
+  const info = req.body
+
+  UserQueries.get_staffs_and_proxy_from_corporation(info.corporation_id)
+    .then((data) => {
+      console.log(data)
+      const arrayOfPromises = data.map((d) => {
+        return UserQueries.insert_ad_landlord_proxy_relationship(info.ad_id, info.corporation_id, d.staff_email, d.proxy_email)
+          .then((data) => { console.log(data) })
+          .catch((err) => { console.log(err) })
+      })
+
+      return Promise.all(arrayOfPromises)
+    })
+    .then((data) => {
+      console.log(data)
+      res.json({
+        message: 'Successful'
+      })
+    })
+    .catch((err) => {
+      console.log(err)
+      res.status(500).send('Failed')
+    })
+
+}

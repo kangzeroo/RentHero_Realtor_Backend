@@ -37,6 +37,7 @@ module.exports = function(app){
 
 	// user
 	app.post('/update_staff_profile', [json_encoding, originCheck, Google_JWT_Check], UserRoutes.update_staff_profile)
+	app.post('/insert_ad_landlord_proxy_relationship', [json_encoding, originCheck, Google_JWT_Check], UserRoutes.insert_multi_ad_landlord_proxy_relationship)
 
 	// email
 	// app.post('/get_recent_emails', [json_encoding, originCheck], EmailRoutes.get_recent_emails)
