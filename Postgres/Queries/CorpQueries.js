@@ -104,6 +104,7 @@ exports.add_proxy_email_to_corp = (corporation_id, proxy_email) => {
                            ON CONFLICT (corporation_id)
                            DO UPDATE SET proxy_email = $2,
                                          updated_at = CURRENT_TIMESTAMP
+                      RETURNING proxy_id
                      `
 
     query(addProxy, values, (err, results) => {
@@ -112,7 +113,31 @@ exports.add_proxy_email_to_corp = (corporation_id, proxy_email) => {
         rej('Failed to save email')
       }
       res({
-        message: 'Successfully saved email'
+        message: 'Successfully saved email',
+        proxy_id: results.rows[0].proxy_id
+      })
+    })
+  })
+  return p
+}
+
+exports.add_proxy_fallback = (proxy_id, email) => {
+  const p = new Promise((res, rej) => {
+    const values = [proxy_id, email, 'default']
+    const addProxy = `INSERT INTO proxy_fallback (proxy_id, email, type)
+                            VALUES ($1, $2, $3)
+                            ON CONFLICT (proxy_id)
+                            DO UPDATE SET email = $2,
+                                          updated_at = CURRENT_TIMESTAMP
+                     `
+
+    query(addProxy, values, (err, results) => {
+      if (err) {
+        console.log(err)
+        rej('Failed to add proxy fallback')
+      }
+      res({
+        message: 'Successfully added proxy fallback'
       })
     })
   })
