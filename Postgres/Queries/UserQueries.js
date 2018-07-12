@@ -20,53 +20,55 @@ const log_through = data => {
 }
 
 exports.retrieve_staff_profile = (req, res, next) => {
-  const info = req.body
-  const staff_id = info.staff_id
-  const profile = info.profile
-  // console.log(profile)
-  // res.json({
-  //   message: 'hello'
+  // const info = req.body
+  // const staff_id = info.staff_id
+  // const profile = info.profile
+  // // console.log(profile)
+  // // res.json({
+  // //   message: 'hello'
+  // // })
+  // get_staff_profile(staff_id)
+  // .then((staffData) => {
+  //   // console.log(staffData)
+  //   if (staffData.rowCount === 0) {
+  //     return get_staff_profile_by_email(profile.email)
+  //     console.log('0')
+  //     return insert_staff_profile(staff_id, profile)
+  //     .then((data) => {
+  //       return get_staff_profile(staff_id)
+  //     })
+  //     .then((data) => {
+  //       res.json({
+  //         new_entry: true,
+  //         profile: data.rows[0],
+  //       })
+  //     })
+  //     .catch((err) => {
+  //       console.log(err)
+  //       res.status(500).send(err)
+  //     })
+  //   } else {
+  //     console.log('1')
+  //     get_staff_profile(staff_id)
+  //     .then((data) => {
+  //       res.json({
+  //         new_entry: false,
+  //         profile: data.rows[0],
+  //       })
+  //     })
+  //     .catch((err) => {
+  //       res.status(500).send(err)
+  //     })
+  //   }
   // })
-  get_staff_profile(staff_id)
-  .then((staffData) => {
-    // console.log(staffData)
-    if (staffData.rowCount === 0) {
-      console.log('0')
-      return insert_staff_profile(staff_id, profile)
-      .then((data) => {
-        return get_staff_profile(staff_id)
-      })
-      .then((data) => {
-        res.json({
-          new_entry: true,
-          profile: data.rows[0],
-        })
-      })
-      .catch((err) => {
-        console.log(err)
-        res.status(500).send(err)
-      })
-    } else {
-      console.log('1')
-      get_staff_profile(staff_id)
-      .then((data) => {
-        res.json({
-          new_entry: false,
-          profile: data.rows[0],
-        })
-      })
-      .catch((err) => {
-        res.status(500).send(err)
-      })
-    }
-  })
 }
 
-const get_staff_profile = (staff_id) => {
+exports.get_staff_profile = (staff_id) => {
+  console.log('get_staff_profile')
   const p = new Promise((res, rej) => {
     const values = [staff_id]
 
-    const queryString = `SELECT a.staff_id, a.first_name, a.last_name, a.email, a.phone,
+    const queryString = `SELECT a.staff_id, a.first_name, a.last_name, a.email, a.phone, a.title,
                                 b.corporation_id
                            FROM staff a
                            LEFT OUTER JOIN corporation_staff b
@@ -123,11 +125,19 @@ exports.grab_refresh_token = function(staff_id) {
   return p
 }
 
-const insert_staff_profile = (staff_id, profile) => {
+exports.insert_staff_profile = (staff_id, profile) => {
+  console.log('insert_staff_profile')
   const p = new Promise((res, rej) => {
     const values = [staff_id, profile.first_name, profile.last_name, profile.email]
 
-    let insert_profile = `INSERT INTO staff (staff_id, first_name, last_name, email) VALUES ($1, $2, $3, $4)`
+    let insert_profile = `INSERT INTO staff (staff_id, first_name, last_name, email)
+                               VALUES ($1, $2, $3, $4)
+                               ON CONFLICT (email)
+                               DO UPDATE SET staff_id = $1,
+                                             first_name = $2,
+                                             last_name = $3,
+                                             updated_at = CURRENT_TIMESTAMP
+                         `
 
     query(insert_profile, values, (err, results) => {
       if (err) {
@@ -135,6 +145,29 @@ const insert_staff_profile = (staff_id, profile) => {
         rej(err)
       }
       res('success')
+    })
+  })
+  return p
+}
+
+exports.insert_corporation_staff_relationship = (corporation_id, staff_id) => {
+  console.log('insert_corporation_staff_relationship')
+  const p = new Promise((res, rej) => {
+    const values = [corporation_id, staff_id]
+    const insertRel = `INSERT INTO corporation_staff (corporation_id, staff_id)
+                            VALUES ($1, $2)
+                            ON CONFLICT (corporation_id, staff_id)
+                            DO UPDATE SET updated_at = CURRENT_TIMESTAMP
+                      `
+
+    query(insertRel, values, (err, results) => {
+      if (err) {
+        console.log(err)
+        rej('Failed to insert_corporation_staff_relationship')
+      }
+      res({
+        messsage: 'Successful'
+      })
     })
   })
   return p
@@ -185,14 +218,15 @@ exports.save_refresh_token_to_database = (access_token, refresh_token, identityI
 }
 
 
-exports.update_staff_profile = (staff_id, first_name, last_name, email, phone) => {
+exports.update_staff_profile = (staff_id, first_name, last_name, email, phone, title) => {
   const p = new Promise((res, rej) => {
-    const values = [staff_id, first_name, last_name, email, phone]
+    const values = [staff_id, first_name, last_name, email, phone, title]
     const updateUser = `UPDATE staff
                            SET first_name = $2,
                                last_name = $3,
                                email = $4,
                                phone = $5,
+                               title = $6,
                                updated_at = CURRENT_TIMESTAMP
                          WHERE staff_id = $1
                        `
@@ -245,6 +279,60 @@ exports.insert_ad_landlord_proxy_relationship = (ad_id, corporation_id, staff_em
       }
       res({
         message: 'Successfully inserted ad proxy relationship'
+      })
+    })
+  })
+  return p
+}
+
+exports.get_staff_by_email = (email) => {
+  console.log('get_staff_by_email')
+  const p = new Promise((res, rej) => {
+    const values = [email]
+    const getStaff = `SELECT a.staff_id, b.corporation_id
+                        FROM staff a
+                        INNER JOIN corporation_staff b
+                        ON a.staff_id = b.staff_id
+                       WHERE email = $1
+                      `
+
+    query(getStaff, values, (err, results) => {
+      if (err) {
+        console.log(err)
+        rej('Failed to get staff')
+      }
+      res(results)
+    })
+  })
+  return p
+}
+
+exports.invite_staff_to_corporation = (corporation_id, staff_id, title, email) => {
+  const p = new Promise((res, rej) => {
+    const values = [staff_id, title, email]
+    const inviteStaff = `INSERT INTO staff (staff_id, title, email)
+                              VALUES ($1, $2, $3)
+                          ON CONFLICT (email) DO NOTHING
+                        `
+    query(inviteStaff, values, (err, results) => {
+      if (err) {
+        console.log(err)
+        rej('Failed to invite staff')
+      }
+      const values2 = [corporation_id, staff_id]
+      const connectStaff = `INSERT INTO corporation_staff (corporation_id, staff_id)
+                                  VALUES ($1, $2)
+                                  ON CONFLICT (corporation_id, staff_id)
+                                  DO NOTHING
+                           `
+      query(connectStaff, values2, (err, results) => {
+        if (err) {
+          console.log(err)
+          rej('Failed to invite staff')
+        }
+        res({
+          message: 'Successfully invited staff'
+        })
       })
     })
   })

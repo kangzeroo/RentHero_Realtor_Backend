@@ -144,3 +144,24 @@ exports.add_proxy_fallback = (proxy_id, email) => {
   })
   return p
 }
+
+exports.get_staffs_for_corporation = (corporation_id) => {
+  const p = new Promise((res, rej) => {
+    const values = [corporation_id]
+    const getStaffs = `SELECT b.staff_id, b.first_name, b.last_name, b.email, b.phone, b.updated_at, b.created_at
+                         FROM corporation_staff a
+                         INNER JOIN staff b
+                         ON a.staff_id = b.staff_id
+                         WHERE a.corporation_id = $1
+                      `
+
+    query(getStaffs, values, (err, results) => {
+      if (err) {
+        console.log(err)
+        rej('Failed to get staffs')
+      }
+      res(results.rows)
+    })
+  })
+  return p
+}

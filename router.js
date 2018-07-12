@@ -25,7 +25,7 @@ module.exports = function(app){
 
 	// auth
 	app.post('/initial_google_auth', [json_encoding, originCheck, Google_JWT_Check], GoogleRoutes.initial_google_auth)
-	app.post('/retrieve_staff_profile', [json_encoding, originCheck, Google_JWT_Check], UserQueries.retrieve_staff_profile)
+	app.post('/retrieve_staff_profile', [json_encoding, originCheck, Google_JWT_Check], UserRoutes.retrieve_staff_profile)
 	app.post('/watch_route', [json_encoding, originCheck], EmailRoutes.watch_route)
 
 	// corp
@@ -34,10 +34,12 @@ module.exports = function(app){
 	app.post('/update_corp_profile', [json_encoding, originCheck, Google_JWT_Check], CorpRoutes.update_corp_profile)
 	app.post('/add_proxy_email_to_corp', [json_encoding, originCheck, Google_JWT_Check], CorpRoutes.add_proxy_email_to_corp)
 	app.post('/add_proxy_fallback', [json_encoding, originCheck, Google_JWT_Check], CorpRoutes.add_proxy_fallback)
+	app.post('/get_staffs_for_corporation', [json_encoding, originCheck, Google_JWT_Check], CorpRoutes.get_staffs_for_corporation)
 
 	// user
 	app.post('/update_staff_profile', [json_encoding, originCheck, Google_JWT_Check], UserRoutes.update_staff_profile)
 	app.post('/insert_ad_landlord_proxy_relationship', [json_encoding, originCheck, Google_JWT_Check], UserRoutes.insert_multi_ad_landlord_proxy_relationship)
+	app.post('/invite_staff_to_corporation', [json_encoding, originCheck, Google_JWT_Check], UserRoutes.invite_staff_to_corporation)
 
 	// email
 	// app.post('/get_recent_emails', [json_encoding, originCheck], EmailRoutes.get_recent_emails)
