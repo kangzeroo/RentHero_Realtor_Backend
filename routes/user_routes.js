@@ -17,10 +17,17 @@ exports.retrieve_staff_profile = function(req, res, next){
     .then((staffData) => {
       console.log('0')
       console.log(staffData)
+      let new_entry = true
+      let new_staff = false
       if (staffData.rowCount === 0) {
         return UserQueries.get_staff_by_email(profile.email)
           .then((data) => {
+            console.log('get_staff_by_email')
+            console.log(data)
             if (data.rowCount > 0) {
+              console.log('NEW MEMBER TRUE NEW ENTRY FALSE')
+              new_entry = false
+              new_staff = true
               return UserQueries.insert_staff_profile(staff_id, profile)
                 .then((data2) => {
                   return UserQueries.insert_corporation_staff_relationship(data.rows[0].corporation_id, staff_id)
@@ -34,7 +41,8 @@ exports.retrieve_staff_profile = function(req, res, next){
           })
           .then((data) => {
             res.json({
-              new_entry: true,
+              new_entry: new_entry,
+              new_staff: new_staff,
               profile: data.rows[0],
             })
           })
@@ -48,6 +56,7 @@ exports.retrieve_staff_profile = function(req, res, next){
         .then((data) => {
           res.json({
             new_entry: false,
+            new_staff: new_staff,
             profile: data.rows[0],
           })
         })
@@ -107,6 +116,7 @@ exports.invite_staff_to_corporation = (req, res, next) => {
 
   UserQueries.get_staff_by_email(info.email)
     .then((data) => {
+      console.log(data)
       if (data.rowCount > 0) {
         res.status(500).send('Email is already used in an account')
       } else {
