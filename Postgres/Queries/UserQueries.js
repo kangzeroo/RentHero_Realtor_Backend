@@ -128,14 +128,15 @@ exports.grab_refresh_token = function(staff_id) {
 exports.insert_staff_profile = (staff_id, profile) => {
   console.log('insert_staff_profile')
   const p = new Promise((res, rej) => {
-    const values = [staff_id, profile.first_name, profile.last_name, profile.email]
+    const values = [staff_id, profile.first_name, profile.last_name, profile.pic, profile.email]
 
-    let insert_profile = `INSERT INTO staff (staff_id, first_name, last_name, email)
-                               VALUES ($1, $2, $3, $4)
+    let insert_profile = `INSERT INTO staff (staff_id, first_name, last_name, thumbnail, email)
+                               VALUES ($1, $2, $3, $4, $5)
                                ON CONFLICT (email)
                                DO UPDATE SET staff_id = $1,
                                              first_name = $2,
                                              last_name = $3,
+                                             thumbnail = $4,
                                              updated_at = CURRENT_TIMESTAMP
                          `
 
@@ -291,9 +292,9 @@ exports.get_staff_by_email = (email) => {
     const values = [email]
     const getStaff = `SELECT a.staff_id, b.corporation_id
                         FROM staff a
-                        INNER JOIN corporation_staff b
+                        LEFT OUTER JOIN corporation_staff b
                         ON a.staff_id = b.staff_id
-                       WHERE email = $1
+                       WHERE a.email = $1
                       `
 
     query(getStaff, values, (err, results) => {
