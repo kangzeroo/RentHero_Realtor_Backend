@@ -93,3 +93,16 @@ exports.add_proxy_fallback = (req, res, next) => {
       res.status(500).send(err)
     })
 }
+
+exports.get_staffs_for_corporation = (req, res, next) => {
+  const info = req.body
+
+  CorpQueries.get_staffs_for_corporation(info.corporation_id)
+    .then((data) => {
+      res.json(data)
+    })
+    .catch((err) => {
+      console.log(err)
+      res.status(500).send(err)
+    })
+}
