@@ -1,12 +1,11 @@
 // AWS SES (Simple Email Service) for sending emails via Amazon
-const AWS_SES = require('aws-sdk/clients/ses')
+const aws_config = require('../credentials/aws_config')
 const AWS = require('aws-sdk/global')
+AWS.config.update(aws_config)
+const AWS_SES = require('aws-sdk/clients/ses')
 const ses = new AWS_SES({
   region: 'us-east-1'
 })
-
-const aws_config = require('../credentials/aws_config')
-AWS.config.update(aws_config)
 
 exports.generateInitialEmail = function(toEmail, corporation_name){
   const p = new Promise((res, rej) => {
