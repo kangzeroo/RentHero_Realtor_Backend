@@ -30,7 +30,7 @@ if (process.env.NODE_ENV === 'production') {
   // instantiate the SSL certificate necessary for HTTPS
   const options = {
       ca: fs.readFileSync('./credentials/production/rentheros_com.ca-bundle'),
-      key: fs.readFileSync('./credentials/production/rentheros_com.p7b'),
+      key: fs.readFileSync('./credentials/production/private-key.key'),
       cert: fs.readFileSync('./credentials/production/rentheros_com.crt'),
       requestCert: false,
       rejectUnauthorized: false
