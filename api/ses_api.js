@@ -5,6 +5,9 @@ const ses = new AWS_SES({
   region: 'us-east-1'
 })
 
+const aws_config = require('../credentials/aws_config')
+AWS.config.update(aws_config)
+
 exports.generateInitialEmail = function(toEmail, corporation_name){
   const p = new Promise((res, rej) => {
 		if (!toEmail || toEmail.length === 0) {
