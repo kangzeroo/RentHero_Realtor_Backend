@@ -14,21 +14,42 @@ exports.generateInitialEmail = function(toEmail, corporation_name){
 		} else {
 			const params = createInitialParams(toEmail, corporation_name)
 			// console.log('Sending email with attached params!')
-			AWS.config.credentials.refresh(function() {
-				// console.log(AWS.config.credentials)
-				ses.sendEmail(params, function(err, data) {
-				  if (err) {
-				  	 console.log('ERROR: ', err); // an error occurred
-				  	 rej(err)
-				  } else {
-				  	console.log(data);           // successful response
-  					res({
-              message: 'Success! Initial mail sent',
-              data: data,
-            })
-          }
-				})
-			})
+      console.log(AWS.config.credentials)
+      if (!AWS.config.credentials) {
+        console.log('updating config...')
+        AWS.config.updfate(aws_config)
+        AWS.config.credentials.refresh(function() {
+  				// console.log(AWS.config.credentials)
+  				ses.sendEmail(params, function(err, data) {
+  				  if (err) {
+  				  	 console.log('ERROR: ', err); // an error occurred
+  				  	 rej(err)
+  				  } else {
+  				  	console.log(data);           // successful response
+    					res({
+                message: 'Success! Initial mail sent',
+                data: data,
+              })
+            }
+  				})
+  			})
+      } else {
+        AWS.config.credentials.refresh(function() {
+  				// console.log(AWS.config.credentials)
+  				ses.sendEmail(params, function(err, data) {
+  				  if (err) {
+  				  	 console.log('ERROR: ', err); // an error occurred
+  				  	 rej(err)
+  				  } else {
+  				  	console.log(data);           // successful response
+    					res({
+                message: 'Success! Initial mail sent',
+                data: data,
+              })
+            }
+  				})
+  			})
+      }
 		}
 	})
 	return p
