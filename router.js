@@ -21,6 +21,8 @@ module.exports = function(app){
 
 	// tests
 	app.get('/test', json_encoding, Test.test)
+	app.get('/email_test', json_encoding, Test.email_test)
+
 	app.post('/auth_test', [json_encoding, originCheck, Google_JWT_Check], Test.auth_test)
 
 	// auth

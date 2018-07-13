@@ -1,7 +1,7 @@
 // AWS SES (Simple Email Service) for sending emails via Amazon
-const aws_config = require('../credentials/aws_config')
 const AWS = require('aws-sdk/global')
-AWS.config.update(aws_config)
+AWS.config.loadFromPath('./credentials/production/aws_config.json');
+
 const AWS_SES = require('aws-sdk/clients/ses')
 const ses = new AWS_SES({
   region: 'us-east-1'
@@ -15,43 +15,21 @@ exports.generateInitialEmail = function(toEmail, corporation_name){
 			const params = createInitialParams(toEmail, corporation_name)
 			// console.log('Sending email with attached params!')
       console.log(AWS.config.credentials)
-      if (!AWS.config.credentials) {
-        console.log('updating config...')
-        AWS.config.update(aws_config)
-        setTimeout(() => {
-          AWS.config.credentials.refresh(function() {
-    				// console.log(AWS.config.credentials)
-    				ses.sendEmail(params, function(err, data) {
-    				  if (err) {
-    				  	 console.log('ERROR: ', err); // an error occurred
-    				  	 rej(err)
-    				  } else {
-    				  	console.log(data);           // successful response
-      					res({
-                  message: 'Success! Initial mail sent',
-                  data: data,
-                })
-              }
-    				})
-    			})
-        }, 500)
-      } else {
-        AWS.config.credentials.refresh(function() {
-  				// console.log(AWS.config.credentials)
-  				ses.sendEmail(params, function(err, data) {
-  				  if (err) {
-  				  	 console.log('ERROR: ', err); // an error occurred
-  				  	 rej(err)
-  				  } else {
-  				  	console.log(data);           // successful response
-    					res({
-                message: 'Success! Initial mail sent',
-                data: data,
-              })
-            }
-  				})
-  			})
-      }
+      AWS.config.credentials.refresh(function() {
+				// console.log(AWS.config.credentials)
+				ses.sendEmail(params, function(err, data) {
+				  if (err) {
+				  	 console.log('ERROR: ', err); // an error occurred
+				  	 rej(err)
+				  } else {
+				  	console.log(data);           // successful response
+  					res({
+              message: 'Success! Initial mail sent',
+              data: data,
+            })
+          }
+				})
+			})
 		}
 	})
 	return p
