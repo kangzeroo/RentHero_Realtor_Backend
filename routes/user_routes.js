@@ -1,5 +1,6 @@
 const uuid = require('uuid')
 const UserQueries = require('../Postgres/Queries/UserQueries')
+const generateInitialEmail = require('../api/ses_api').generateInitialEmail
 
 // POST /get_staff_profile
 exports.retrieve_staff_profile = function(req, res, next){
@@ -118,10 +119,18 @@ exports.invite_staff_to_corporation = (req, res, next) => {
     .then((data) => {
       console.log(data)
       if (data.rowCount > 0) {
-        res.status(500).send('Email is already used in an account')
+        // res.status(500).send('Email is already used in an account')
+        console.log('EMAIL ALREADY USER')
+        res.json({
+          error: 'Email is already used in an account'
+        })
       } else {
         return UserQueries.invite_staff_to_corporation(info.corporation_id, staff_id, info.title, info.email)
       }
+    })
+    .then((data) => {
+      console.log('generating email...')
+      return generateInitialEmail(info.email, info.corporation_name)
     })
     .then((data) => {
       console.log(data)
