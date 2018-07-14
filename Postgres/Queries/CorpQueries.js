@@ -61,12 +61,24 @@ exports.create_corporation_for_staff = (corporation_id, corporation_name, staff_
             console.log(err)
             rej('Error #3 has occurred')
           }
-          query('COMMIT', (err) => {
+          const values3 = [staff_id]
+          const updateStaff = `UPDATE staff
+                                  SET title = 'admin'
+                                WHERE staff_id = $1
+                              `
+          query(updateStaff, values3, (err, results) => {
             if (err) {
-              console.error('Error committing transaction')
-              rej('Error committing transaction')
+              console.log('ERROR 4')
+              console.log(err)
+              rej('Error #4 has occurred')
             }
-            res('Successfully created public company')
+            query('COMMIT', (err) => {
+              if (err) {
+                console.error('Error committing transaction: ', err)
+                rej('Error committing transaction')
+              }
+              res('Successfully created public company')
+            })
           })
         })
       })
@@ -148,7 +160,9 @@ exports.add_proxy_fallback = (proxy_id, email) => {
 exports.get_staffs_for_corporation = (corporation_id) => {
   const p = new Promise((res, rej) => {
     const values = [corporation_id]
-    const getStaffs = `SELECT b.staff_id, b.first_name, b.last_name, b.email, b.phone, b.updated_at, b.created_at
+    const getStaffs = `SELECT b.staff_id, b.first_name, b.last_name,
+                              b.email, b.phone, b.title, b.thumbnail,
+                              b.updated_at, b.created_at
                          FROM corporation_staff a
                          INNER JOIN staff b
                          ON a.staff_id = b.staff_id
@@ -161,6 +175,72 @@ exports.get_staffs_for_corporation = (corporation_id) => {
         rej('Failed to get staffs')
       }
       res(results.rows)
+    })
+  })
+  return p
+}
+
+exports.update_team_member = (staff_id, title) => {
+  const p = new Promise((res, rej) => {
+    const values = [staff_id, title]
+    const updateQuery = `UPDATE staff
+                            SET title = $2,
+                                updated_at = CURRENT_TIMESTAMP
+                          WHERE staff_id = $1
+                        `
+
+    query(updateQuery, values, (err, results) => {
+      if (err) {
+        console.log(err)
+        rej('Failed to update team member')
+      }
+      res({
+        message: 'Successfully updated team member'
+      })
+    })
+  })
+  return p
+}
+
+exports.delete_team_member = (staff_id, corporation_id, corporation_name) => {
+  const p = new Promise((res, rej) => {
+    query('BEGIN', (err) => {
+      if (err) {
+        console.log('BEGIN ERROR: ', err)
+        rej('Failed to remove team member')
+      }
+      const values = [corporation_id, staff_id]
+      const removeRelationship = `DELETE FROM corporation_staff
+                                        WHERE corporation_id = $1
+                                          AND staff_id = $2
+                                 `
+
+      query(removeRelationship, values, (err, results) => {
+        if (err) {
+          console.log('ERROR: ', err)
+          rej('Failed to remove team member')
+        }
+        const values2 = [staff_id]
+        const removeStaff = `DELETE FROM staff
+                                   WHERE staff_id = $1
+                            `
+
+        query(removeStaff, values2, (err, results) => {
+          if (err) {
+            console.log('ERROR: ', err)
+            rej('Failed to remove team member')
+          }
+          query('COMMIT', (err) => {
+            if (err) {
+              console.log('ERROR: ', err)
+              rej('Failed to remove team member')
+            }
+            res({
+              message: `Successfully removed team member from ${corporation_name}`
+            })
+          })
+        })
+      })
     })
   })
   return p

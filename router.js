@@ -37,6 +37,8 @@ module.exports = function(app){
 	app.post('/add_proxy_email_to_corp', [json_encoding, originCheck, Google_JWT_Check], CorpRoutes.add_proxy_email_to_corp)
 	app.post('/add_proxy_fallback', [json_encoding, originCheck, Google_JWT_Check], CorpRoutes.add_proxy_fallback)
 	app.post('/get_staffs_for_corporation', [json_encoding, originCheck, Google_JWT_Check], CorpRoutes.get_staffs_for_corporation)
+	app.post('/update_team_member', [json_encoding, originCheck, Google_JWT_Check], CorpRoutes.update_team_member)
+	app.post('/delete_team_member', [json_encoding, originCheck, Google_JWT_Check], CorpRoutes.delete_team_member)
 
 	// user
 	app.post('/update_staff_profile', [json_encoding, originCheck, Google_JWT_Check], UserRoutes.update_staff_profile)
