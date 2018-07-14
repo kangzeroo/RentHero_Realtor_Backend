@@ -19,56 +19,14 @@ const log_through = data => {
   return data
 }
 
-exports.retrieve_staff_profile = (req, res, next) => {
-  // const info = req.body
-  // const staff_id = info.staff_id
-  // const profile = info.profile
-  // // console.log(profile)
-  // // res.json({
-  // //   message: 'hello'
-  // // })
-  // get_staff_profile(staff_id)
-  // .then((staffData) => {
-  //   // console.log(staffData)
-  //   if (staffData.rowCount === 0) {
-  //     return get_staff_profile_by_email(profile.email)
-  //     console.log('0')
-  //     return insert_staff_profile(staff_id, profile)
-  //     .then((data) => {
-  //       return get_staff_profile(staff_id)
-  //     })
-  //     .then((data) => {
-  //       res.json({
-  //         new_entry: true,
-  //         profile: data.rows[0],
-  //       })
-  //     })
-  //     .catch((err) => {
-  //       console.log(err)
-  //       res.status(500).send(err)
-  //     })
-  //   } else {
-  //     console.log('1')
-  //     get_staff_profile(staff_id)
-  //     .then((data) => {
-  //       res.json({
-  //         new_entry: false,
-  //         profile: data.rows[0],
-  //       })
-  //     })
-  //     .catch((err) => {
-  //       res.status(500).send(err)
-  //     })
-  //   }
-  // })
-}
-
 exports.get_staff_profile = (staff_id) => {
   console.log('get_staff_profile')
   const p = new Promise((res, rej) => {
     const values = [staff_id]
 
-    const queryString = `SELECT a.staff_id, a.first_name, a.last_name, a.email, a.phone, a.title,
+    const queryString = `SELECT a.staff_id, a.first_name, a.last_name,
+                                a.email, a.phone, a.title,
+                                a.updated_at, a.created_at,
                                 b.corporation_id
                            FROM staff a
                            LEFT OUTER JOIN corporation_staff b
@@ -168,6 +126,59 @@ exports.insert_corporation_staff_relationship = (corporation_id, staff_id) => {
       }
       res({
         messsage: 'Successful'
+      })
+    })
+  })
+  return p
+}
+
+exports.insert_staff_profile_and_relationship = (corporation_id, staff_id, profile) => {
+  const p = new Promise((res, rej) => {
+    query('BEGIN', (err) => {
+      if (err) {
+        console.log('TRANSACTION BEGIN ERROR: ', err)
+        rej('transaction error occurred')
+      }
+      const values = [staff_id, profile.first_name, profile.last_name, profile.pic, profile.email]
+
+      let insert_profile = `INSERT INTO staff (staff_id, first_name, last_name, thumbnail, email)
+                                 VALUES ($1, $2, $3, $4, $5)
+                                 ON CONFLICT (email)
+                                 DO UPDATE SET staff_id = $1,
+                                               first_name = $2,
+                                               last_name = $3,
+                                               thumbnail = $4,
+                                               updated_at = CURRENT_TIMESTAMP
+                             RETURNING staff_id
+                           `
+
+      query(insert_profile, values, (err, results) => {
+        if (err) {
+          console.log(err)
+          rej(err)
+        }
+        const values2 = [corporation_id, results.rows[0].staff_id]
+        const insertRel = `INSERT INTO corporation_staff (corporation_id, staff_id)
+                                VALUES ($1, $2)
+                                ON CONFLICT (corporation_id, staff_id)
+                                DO UPDATE SET updated_at = CURRENT_TIMESTAMP
+                          `
+
+        query(insertRel, values2, (err, results) => {
+          if (err) {
+            console.log(err)
+            rej('Failed to insert_corporation_staff_relationship')
+          }
+          query('COMMIT', (err) => {
+            if (err) {
+              console.log('Error committing transaction: ', err)
+              rej('Failed')
+            }
+            res({
+              message: 'Successfull'
+            })
+          })
+        })
       })
     })
   })
@@ -310,29 +321,41 @@ exports.get_staff_by_email = (email) => {
 
 exports.invite_staff_to_corporation = (corporation_id, staff_id, title, email) => {
   const p = new Promise((res, rej) => {
-    const values = [staff_id, title, email]
-    const inviteStaff = `INSERT INTO staff (staff_id, title, email)
-                              VALUES ($1, $2, $3)
-                          ON CONFLICT (email) DO NOTHING
-                        `
-    query(inviteStaff, values, (err, results) => {
+    query('BEGIN', (err) => {
       if (err) {
-        console.log(err)
-        rej('Failed to invite staff')
+        console.log('TRANSACTION BEGIN ERROR: ', err)
+        rej('transaction error occurred')
       }
-      const values2 = [corporation_id, staff_id]
-      const connectStaff = `INSERT INTO corporation_staff (corporation_id, staff_id)
-                                  VALUES ($1, $2)
-                                  ON CONFLICT (corporation_id, staff_id)
-                                  DO NOTHING
-                           `
-      query(connectStaff, values2, (err, results) => {
+      const values = [staff_id, title, email]
+      const inviteStaff = `INSERT INTO staff (staff_id, title, email)
+                                VALUES ($1, $2, $3)
+                            ON CONFLICT (email) DO NOTHING
+                          `
+      query(inviteStaff, values, (err, results) => {
         if (err) {
-          console.log(err)
+          console.log('ERROR 2: ', err)
           rej('Failed to invite staff')
         }
-        res({
-          message: 'Successfully invited staff'
+        const values2 = [corporation_id, staff_id]
+        const connectStaff = `INSERT INTO corporation_staff (corporation_id, staff_id)
+                                    VALUES ($1, $2)
+                                    ON CONFLICT (corporation_id, staff_id)
+                                    DO NOTHING
+                             `
+        query(connectStaff, values2, (err, results) => {
+          if (err) {
+            console.log('ERROR 3: ', err)
+            rej('Failed to invite staff')
+          }
+          query('COMMIT', (err) => {
+            if (err) {
+              console.log('Error committing transaction: ', err)
+              rej('Failed to invite staff')
+            }
+            res({
+              message: 'Successfully invited staff'
+            })
+          })
         })
       })
     })

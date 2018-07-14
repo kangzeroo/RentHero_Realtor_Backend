@@ -106,3 +106,33 @@ exports.get_staffs_for_corporation = (req, res, next) => {
       res.status(500).send(err)
     })
 }
+
+exports.update_team_member = (req, res, next) => {
+  const info = req.body
+
+  CorpQueries.update_team_member(info.staff_id, info.title)
+    .then((data) => {
+      res.json({
+        message: data.message,
+      })
+    })
+    .catch((err) => {
+      console.log(err)
+      res.status(500).send(err)
+    })
+}
+
+exports.delete_team_member = (req, res, next) => {
+  const info = req.body
+
+  CorpQueries.delete_team_member(info.staff_id, info.corporation_id, info.corporation_name)
+    .then((data) => {
+      res.json({
+        message: data.message,
+      })
+    })
+    .catch((err) => {
+      console.log(err)
+      res.status(500).send(err)
+    })
+}

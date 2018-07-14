@@ -10,10 +10,7 @@ exports.retrieve_staff_profile = function(req, res, next){
   const info = req.body
   const staff_id = info.staff_id
   const profile = info.profile
-  // console.log(profile)
-  // res.json({
-  //   message: 'hello'
-  // })
+
   UserQueries.get_staff_profile(staff_id)
     .then((staffData) => {
       console.log('0')
@@ -29,10 +26,7 @@ exports.retrieve_staff_profile = function(req, res, next){
               console.log('NEW MEMBER TRUE NEW ENTRY FALSE')
               new_entry = false
               new_staff = true
-              return UserQueries.insert_staff_profile(staff_id, profile)
-                .then((data2) => {
-                  return UserQueries.insert_corporation_staff_relationship(data.rows[0].corporation_id, staff_id)
-                })
+              return UserQueries.insert_staff_profile_and_relationship(data.rows[0].corporation_id, staff_id, profile)
             } else {
               return UserQueries.insert_staff_profile(staff_id, profile)
             }
@@ -112,7 +106,6 @@ exports.insert_multi_ad_landlord_proxy_relationship = (req, res, next) => {
 
 exports.invite_staff_to_corporation = (req, res, next) => {
   const info = req.body
-
   const staff_id = uuid.v4()
 
   UserQueries.get_staff_by_email(info.email)
@@ -122,21 +115,21 @@ exports.invite_staff_to_corporation = (req, res, next) => {
         // res.status(500).send('Email is already used in an account')
         console.log('EMAIL ALREADY USER')
         res.json({
-          error: 'Email is already used in an account'
+          error: 'Email address is already used in an account'
         })
       } else {
         return UserQueries.invite_staff_to_corporation(info.corporation_id, staff_id, info.title, info.email)
+          .then((data) => {
+            console.log('generating email...')
+            return generateInitialEmail(info.email, info.corporation_name)
+          })
+          .then((data) => {
+            console.log(data)
+            res.json({
+              message: data.message
+            })
+          })
       }
-    })
-    .then((data) => {
-      console.log('generating email...')
-      return generateInitialEmail(info.email, info.corporation_name)
-    })
-    .then((data) => {
-      console.log(data)
-      res.json({
-        message: data.message
-      })
     })
     .catch((err) => {
       console.log(err)
