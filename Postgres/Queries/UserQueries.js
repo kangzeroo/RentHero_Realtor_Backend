@@ -259,7 +259,7 @@ exports.update_staff_profile = (staff_id, first_name, last_name, email, phone, t
 exports.get_staffs_and_proxy_from_corporation = (corporation_id) => {
   const p = new Promise((res, rej) => {
     const values = [corporation_id]
-    const queryString = `SELECT b.email AS staff_email, c.proxy_email
+    const queryString = `SELECT b.staff_id, b.email AS staff_email, c.proxy_email, c.proxy_id
                            FROM corporation_staff a
                            INNER JOIN staff b ON a.staff_id = b.staff_id
                            INNER JOIN corporation_proxy c ON a.corporation_id = c.corporation_id
@@ -277,10 +277,10 @@ exports.get_staffs_and_proxy_from_corporation = (corporation_id) => {
   return p
 }
 
-exports.insert_ad_landlord_proxy_relationship = (ad_id, corporation_id, staff_email, proxy_email) => {
+exports.insert_ad_landlord_proxy_relationship = (ad_id, corporation_id, staff_id, proxy_id) => {
   const p = new Promise((res, rej) => {
-    const values = [ad_id, corporation_id, staff_email, proxy_email]
-    const insertAd = `INSERT INTO ad_landlord_proxy_relationship (ad_id, corporation_id, staff_email, proxy_email)
+    const values = [ad_id, corporation_id, staff_id, proxy_id]
+    const insertAd = `INSERT INTO ad_landlord_proxy_relationship (ad_id, corporation_id, staff_id, proxy_id)
                              VALUES ($1, $2, $3, $4)
                      `
 

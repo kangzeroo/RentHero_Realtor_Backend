@@ -84,7 +84,7 @@ exports.insert_multi_ad_landlord_proxy_relationship = (req, res, next) => {
     .then((data) => {
       console.log(data)
       const arrayOfPromises = data.map((d) => {
-        return UserQueries.insert_ad_landlord_proxy_relationship(info.ad_id, info.corporation_id, d.staff_email, d.proxy_email)
+        return UserQueries.insert_ad_landlord_proxy_relationship(info.ad_id, info.corporation_id, d.staff_id, d.proxy_id)
           .then((data) => { console.log(data) })
           .catch((err) => { console.log(err) })
       })
