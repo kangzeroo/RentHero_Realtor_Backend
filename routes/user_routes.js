@@ -32,6 +32,9 @@ exports.retrieve_staff_profile = function(req, res, next){
             }
           })
           .then((data) => {
+            return UserQueries.insert_staff_agent(staff_id, profile)
+          })
+          .then((data) => {
             return UserQueries.get_staff_profile(staff_id)
           })
           .then((data) => {

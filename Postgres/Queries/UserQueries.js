@@ -109,6 +109,67 @@ exports.insert_staff_profile = (staff_id, profile) => {
   return p
 }
 
+exports.insert_staff_agent = (staff_id, profile) => {
+  const p = new Promise((res, rej) => {
+    const values = [staff_id]
+    const queryString = `SELECT * FROM staff_agent WHERE staff_id = $1`
+    query('BEGIN', (err) => {
+      if (err) {
+        console.log('ERROR: ', err)
+        rej(err)
+      }
+      query(queryString, values, (err, results) => {
+        if (err) {
+          console.log('ERROR: ', err)
+          rej(err)
+        }
+        if (results.rowCount > 0) {
+          query('COMMIT', (err) => {
+            if (err) {
+              console.log('ERROR: ', err)
+              rej(err)
+            }
+            res()
+          })
+        } else {
+          const agent_id = uuid.v4()
+          const new_email = profile.email.split('@')[0].concat(`.${uuid.v4()}@renthero.tech`)
+          const values2 = [agent_id, profile.first_name, profile.last_name, new_email]
+          const queryString2 = `INSERT INTO agents (agent_id, first_name, last_name, email)
+                                      VALUES ($1, $2, $3, $4)
+                              `
+
+          query(queryString2, values2, (err, results) => {
+            if (err) {
+              console.log('ERROR: ', err)
+              rej(err)
+            }
+            const values3 = [staff_id, agent_id]
+            const queryString3 = `INSERT INTO staff_agent (staff_id, agent_id) VALUES ($1, $2)
+                                    ON CONFLICT (staff_id) DO NOTHING
+                                 `
+
+            query(queryString3, values3, (err, results) => {
+              if (err) {
+                console.log('ERROR: ', err)
+                rej(err)
+              }
+              query('COMMIT', (err) => {
+                if (err) {
+                  console.log('ERROR: ', err)
+                  rej(err)
+                }
+                res()
+              })
+            })
+          })
+        }
+      })
+    })
+  })
+  return p
+}
+
 exports.insert_corporation_staff_relationship = (corporation_id, staff_id) => {
   console.log('insert_corporation_staff_relationship')
   const p = new Promise((res, rej) => {
