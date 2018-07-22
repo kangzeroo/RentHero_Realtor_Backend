@@ -9,7 +9,6 @@ const uuid = require('uuid')
 
 const query = promisify(pool.query)
 
-
 exports.get_corporation_from_sql = (corporation_id) => {
   const p = new Promise((res, rej) => {
     const values = [corporation_id]
