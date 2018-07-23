@@ -9,6 +9,7 @@ const uuid = require('uuid')
 
 const query = promisify(pool.query)
 
+
 exports.get_corporation_from_sql = (corporation_id) => {
   const p = new Promise((res, rej) => {
     const values = [corporation_id]
@@ -161,10 +162,15 @@ exports.get_staffs_for_corporation = (corporation_id) => {
     const values = [corporation_id]
     const getStaffs = `SELECT b.staff_id, b.first_name, b.last_name,
                               b.email, b.phone, b.title, b.thumbnail,
-                              b.updated_at, b.created_at
+                              b.updated_at, b.created_at,
+                              JSON_BUILD_OBJECT('agent_id', d.agent_id, 'first_name', d.first_name, 'last_name', d.last_name, 'email', d.email, 'phone', d.phone) AS agent
                          FROM corporation_staff a
                          INNER JOIN staff b
                          ON a.staff_id = b.staff_id
+                         INNER JOIN staff_agent c
+                         ON a.staff_id = c.staff_id
+                         INNER JOIN agents d
+                         ON c.agent_id = d.agent_id
                          WHERE a.corporation_id = $1
                       `
 
