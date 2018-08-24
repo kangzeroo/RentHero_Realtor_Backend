@@ -13,7 +13,7 @@ exports.get_corporation_from_sql = (corporation_id) => {
   const p = new Promise((res, rej) => {
     const values = [corporation_id]
     const queryString = `SELECT a.corporation_id, a.corporation_name, a.created_at, a.updated_at,
-                                b.proxy_email, b.proxy_phone
+                                b.proxy_id, b.proxy_email, b.proxy_phone
                            FROM corporation a
                            LEFT OUTER JOIN corporation_proxy b
                            ON a.corporation_id = b.corporation_id
