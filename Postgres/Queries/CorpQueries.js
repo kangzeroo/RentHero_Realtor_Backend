@@ -107,9 +107,9 @@ exports.update_corporation_profile = (corporation_id, corporation_name) => {
   return p
 }
 
-exports.add_proxy_email_to_corp = (corporation_id, proxy_email) => {
+exports.add_proxy_email_to_corp = (corporation_id, proxy_email_base) => {
   const p = new Promise((res, rej) => {
-    const values = [corporation_id, proxy_email]
+    const values = [corporation_id, proxy_email_base.concat(`${process.env.NODE_ENV === 'production' ? '@flexximail.org' : '@devproxyemail.net'}`)]
     const addProxy = `INSERT INTO corporation_proxy (corporation_id, proxy_email)
                            VALUES ($1, $2)
                            ON CONFLICT (corporation_id)

@@ -27,10 +27,17 @@ exports.get_staff_profile = (staff_id) => {
     const queryString = `SELECT a.staff_id, a.first_name, a.last_name,
                                 a.email, a.phone, a.title,
                                 a.updated_at, a.created_at,
-                                b.corporation_id
+                                b.corporation_id,
+                                c.agent_ids
                            FROM staff a
                            LEFT OUTER JOIN corporation_staff b
                              ON a.staff_id = b.staff_id
+                           LEFT OUTER JOIN (
+                             SELECT staff_id, JSON_AGG(agent_id) AS agent_ids
+                               FROM staff_agent
+                               GROUP BY staff_id
+                           ) c
+                           ON a.staff_id = c.staff_id
                           WHERE a.staff_id = $1`
 
     query(queryString, values, (err, results) => {
@@ -134,7 +141,7 @@ exports.insert_staff_agent = (staff_id, profile) => {
         } else {
           // this method works, but we have to manually add an operator as soon as a customer is created, from the admin panel.
           const agent_id = uuid.v4()
-          const new_email = profile.email.split('@')[0].concat(`.${uuid.v4()}@renthero.tech`)
+          const new_email = profile.email.split('@')[0].concat(`.${uuid.v4()}${process.env.NODE_ENV === 'production' ? '@renthero.tech' : '@devagentemail.net'}`)
           const agent_name = [profile.first_name, profile.last_name].join(' ')
           const values2 = [agent_id, agent_name, new_email]
           const queryString2 = `INSERT INTO agents (agent_id, friendly_name, email)
