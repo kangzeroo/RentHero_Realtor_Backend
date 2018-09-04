@@ -132,11 +132,13 @@ exports.insert_staff_agent = (staff_id, profile) => {
             res()
           })
         } else {
+          // this method works, but we have to manually add an operator as soon as a customer is created, from the admin panel.
           const agent_id = uuid.v4()
           const new_email = profile.email.split('@')[0].concat(`.${uuid.v4()}@renthero.tech`)
-          const values2 = [agent_id, profile.first_name, profile.last_name, new_email]
-          const queryString2 = `INSERT INTO agents (agent_id, first_name, last_name, email)
-                                      VALUES ($1, $2, $3, $4)
+          const agent_name = [profile.first_name, profile.last_name].join(' ')
+          const values2 = [agent_id, agent_name, new_email]
+          const queryString2 = `INSERT INTO agents (agent_id, friendly_name, email)
+                                      VALUES ($1, $2, $3)
                               `
 
           query(queryString2, values2, (err, results) => {

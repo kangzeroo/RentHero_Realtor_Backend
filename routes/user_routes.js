@@ -14,7 +14,7 @@ exports.retrieve_staff_profile = function(req, res, next){
   UserQueries.get_staff_profile(staff_id)
     .then((staffData) => {
       console.log('0')
-      console.log(staffData)
+      // console.log(staffData)
       let new_entry = true
       let new_staff = false
       if (staffData.rowCount === 0) {
