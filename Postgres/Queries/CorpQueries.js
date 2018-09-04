@@ -162,7 +162,7 @@ exports.get_staffs_for_corporation = (corporation_id) => {
     const getStaffs = `SELECT b.staff_id, b.first_name, b.last_name,
                               b.email, b.phone, b.title, b.thumbnail,
                               b.updated_at, b.created_at,
-                              JSON_BUILD_OBJECT('agent_id', d.agent_id, 'first_name', d.first_name, 'last_name', d.last_name, 'email', d.email, 'phone', d.phone) AS agent
+                              JSON_BUILD_OBJECT('agent_id', d.agent_id, 'friendly_name', d.friendly_name, 'email', d.email, 'phone', d.phone) AS agent
                          FROM corporation_staff a
                          INNER JOIN staff b
                          ON a.staff_id = b.staff_id
