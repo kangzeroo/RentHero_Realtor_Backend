@@ -66,7 +66,7 @@ exports.update_corp_profile = (req, res, next) => {
 exports.add_proxy_email_to_corp = (req, res, next) => {
   const info = req.body
 
-  CorpQueries.add_proxy_email_to_corp(info.corporation_id, info.proxy_email)
+  CorpQueries.add_proxy_email_to_corp(info.corporation_id, info.proxy_email_base)
     .then((data) => {
       res.json({
         message: data.message,
