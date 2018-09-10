@@ -118,6 +118,7 @@ exports.insert_staff_profile = (staff_id, profile) => {
 
 exports.insert_staff_agent = (staff_id, profile) => {
   const p = new Promise((res, rej) => {
+
     const values = [staff_id]
     const queryString = `SELECT * FROM staff_agent WHERE staff_id = $1`
     query('BEGIN', (err) => {
@@ -139,36 +140,49 @@ exports.insert_staff_agent = (staff_id, profile) => {
             res()
           })
         } else {
-          // this method works, but we have to manually add an operator as soon as a customer is created, from the admin panel.
-          const agent_id = uuid.v4()
-          const new_email = profile.email.split('@')[0].concat(`.${uuid.v4()}${process.env.NODE_ENV === 'production' ? '@renthero.tech' : '@devagentemail.net'}`)
-          const agent_name = [profile.first_name, profile.last_name].join(' ')
-          const values2 = [agent_id, agent_name, new_email]
-          const queryString2 = `INSERT INTO agents (agent_id, friendly_name, email)
-                                      VALUES ($1, $2, $3)
-                              `
-
-          query(queryString2, values2, (err, results) => {
+          const queryDefaultAgent = `SELECT * FROM agents WHERE friendly_name='default'`
+          query(queryDefaultAgent, (err, results) => {
             if (err) {
               console.log('ERROR: ', err)
               rej(err)
             }
-            const values3 = [staff_id, agent_id]
-            const queryString3 = `INSERT INTO staff_agent (staff_id, agent_id) VALUES ($1, $2)
-                                    ON CONFLICT (staff_id) DO NOTHING
-                                 `
+            let agent_id
+            if (results && results.rowCount > 0) {
+              agent_id = results.rows[0].agent_id
+            } else {
+              agent_id = uuid.v4()
+            }
+            const new_email = profile.email.split('@')[0].concat(`.${uuid.v4()}${process.env.NODE_ENV === 'production' ? '@renthero.tech' : '@devagentemail.net'}`)
+            const agent_name = [profile.first_name, profile.last_name].join(' ')
+            const values2 = [agent_id, agent_name, new_email]
+            const queryString2 = `INSERT INTO agents (agent_id, friendly_name, email)
+                                        VALUES ($1, $2, $3)
+                                    ON CONFLICT (agent_id)
+                                    DO NOTHING
+                                `
 
-            query(queryString3, values3, (err, results) => {
+            query(queryString2, values2, (err, results) => {
               if (err) {
                 console.log('ERROR: ', err)
                 rej(err)
               }
-              query('COMMIT', (err) => {
+              const values3 = [staff_id, agent_id]
+              const queryString3 = `INSERT INTO staff_agent (staff_id, agent_id) VALUES ($1, $2)
+                                      ON CONFLICT (staff_id) DO NOTHING
+                                   `
+
+              query(queryString3, values3, (err, results) => {
                 if (err) {
                   console.log('ERROR: ', err)
                   rej(err)
                 }
-                res()
+                query('COMMIT', (err) => {
+                  if (err) {
+                    console.log('ERROR: ', err)
+                    rej(err)
+                  }
+                  res()
+                })
               })
             })
           })
