@@ -2,7 +2,6 @@ const Promise = require('bluebird')
 const { promisify } = Promise
 const pool = require('../db_connect')
 const uuid = require('uuid')
-
 // to run a query we just pass it to the pool
 // after we're done nothing has to be taken care of
 // we don't have to return any client to the pool or close a connection
@@ -46,6 +45,25 @@ exports.get_staff_profile = (staff_id) => {
         rej(err)
       }
       res(results)
+    })
+  })
+  return p
+}
+
+exports.update_last_login = (staff_id) => {
+  const p = new Promise((res, rej) => {
+    const values = [staff_id]
+    const queryString = `UPDATE staff
+                            SET last_login = CURRENT_TIMESTAMP
+                          WHERE staff_id = $1
+                        `
+
+    query(queryString, values, (err, results) => {
+      if (err) {
+        console.log(err)
+        rej(err)
+      }
+      res()
     })
   })
   return p

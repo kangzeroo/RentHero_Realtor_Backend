@@ -35,6 +35,7 @@ exports.retrieve_staff_profile = function(req, res, next){
             return UserQueries.insert_staff_agent(staff_id, profile)
           })
           .then((data) => {
+            UserQueries.update_last_login(staff_id)
             return UserQueries.get_staff_profile(staff_id)
           })
           .then((data) => {
@@ -50,6 +51,7 @@ exports.retrieve_staff_profile = function(req, res, next){
           })
       } else {
         console.log('1')
+        UserQueries.update_last_login(staff_id)
         UserQueries.get_staff_profile(staff_id)
         .then((data) => {
           res.json({
