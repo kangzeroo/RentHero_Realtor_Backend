@@ -13,10 +13,12 @@ exports.get_corporation_from_sql = (corporation_id) => {
   const p = new Promise((res, rej) => {
     const values = [corporation_id]
     const queryString = `SELECT a.corporation_id, a.corporation_name, a.created_at, a.updated_at,
-                                b.proxy_id, b.proxy_email, b.proxy_phone
+                                b.proxy_id, b.proxy_email, b.proxy_phone, c.pool_id
                            FROM corporation a
                            LEFT OUTER JOIN corporation_proxy b
                            ON a.corporation_id = b.corporation_id
+                           LEFT OUTER JOIN corporation_pool c
+                           ON a.corporation_id = c.corporation_id
                            WHERE a.corporation_id = $1
                         `
 
@@ -241,6 +243,56 @@ exports.delete_team_member = (staff_id, corporation_id, corporation_name) => {
             }
             res({
               message: `Successfully removed team member from ${corporation_name}`
+            })
+          })
+        })
+      })
+    })
+  })
+  return p
+}
+
+exports.create_corporation_pool = (corporation_id, corporation_name) => {
+  const p = new Promise((res, rej) => {
+    query('BEGIN', (err) => {
+      if (err) {
+        console.log(err)
+        rej('An Error Ocurred')
+      }
+      const pool_id = `PL${uuid.v4()}`
+      const values = [pool_id, corporation_name]
+      const queryString = `INSERT INTO lead_pools (pool_id, name)
+                              VALUES ($1, $2)
+                            RETURNING pool_id
+                          `
+
+      query(queryString, values, (err, results) => {
+        if (err) {
+          console.log(err)
+          rej('An Error Ocurred')
+        }
+        const pool_id = results.rows[0].pool_id
+        const values2 = [corporation_id, pool_id]
+        const queryString2 = `INSERT INTO corporation_pool (corporation_id, pool_id)
+                                    VALUES ($1, $2)
+                                    ON CONFLICT (corporation_id, pool_id)
+                                    DO NOTHING
+                              `
+
+        query(queryString2, values2, (err, results) => {
+          if (err) {
+            console.log(err)
+            rej('An Error Ocurred')
+          }
+
+          query('COMMIT', (err) => {
+            if (err) {
+              console.log(err)
+              rej('An Error Occurred')
+            }
+            res({
+              message: 'Successfully Created Corporation Pool',
+              pool_id: pool_id,
             })
           })
         })

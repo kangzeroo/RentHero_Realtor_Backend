@@ -136,3 +136,18 @@ exports.delete_team_member = (req, res, next) => {
       res.status(500).send(err)
     })
 }
+
+exports.create_corporation_pool = (req, res, next) => {
+  const info = req.body
+  const corporation_name = info.corporation_name
+  const corporation_id = info.corporation_id
+
+  CorpQueries.create_corporation_pool(corporation_id, corporation_name)
+    .then((data) => {
+      res.json(data)
+    })
+    .catch((err) => {
+      console.log(err)
+      res.status(500).send('Failed to create corporation pool')
+    })
+}
